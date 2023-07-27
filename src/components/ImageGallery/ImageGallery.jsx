@@ -5,11 +5,19 @@ import css from "./ImageGallery.module.css"
 
 import React from 'react'
 
-const ImageGallery = ({ hits, showModal }) => {
-  
+const ImageGallery = ({ hits, showModal}) => {
+const openModal = (e) => {
+    if (e.target.nodeName === 'IMG') { showModal(e.target.dataset.source)}
+    if (e.target.nodeName !== 'IMG') {
+    return
+    }
+  }
   
     if(hits)
-        return (<ul className={css.ImageGallery} onClick={showModal}>{hits.map((hit) => <ImageGalleryItem key={hit.id} hit={hit}  />)}</ul>)
+        return (<ul className={css.ImageGallery}
+           onClick={openModal}>
+            {hits.map((hit) => <ImageGalleryItem key={hit.id} hit={hit} />)}
+        </ul>)
     
 	
 }

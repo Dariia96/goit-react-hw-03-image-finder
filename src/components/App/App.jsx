@@ -14,23 +14,29 @@ class App extends Component {
   
   state = {
     images: [],
+    totalHits: '',
     search: '',
     error: "",
     page: 1,
     isLoading: false,
     modalURL: "",
-    showModal: false 
+    showModal: false, 
   }
-  handleSearch = (e) => {
-    e.preventDefault();
-    
-    this.setState({ search: e.target[1].value })
-    console.log(this.state.search)
+  
+  handleSearch = (word) => {
+    this.setState({
+      search: word,
+      page: 1,
+      images: [],
+      error: "",
+      showModal: false,
+      modalURL: "",
+    })
   }
+
   componentDidUpdate(prevProps, prevState) {
-    if (prevState.search !== this.state.search) {
+    if (prevState.search !== this.state.search || prevState.page !== this.state.page) {
       this.apiImages()
-      this.setState({page: 1})
     }
 	}
 
@@ -39,7 +45,10 @@ class App extends Component {
 		try {
 			
 			const data = await getImagesBySearch (this.state.search, this.state.page )
-      this.setState({ images: this.state.images.concat(data.hits)})
+      this.setState({
+        images: this.state.images.concat(data.hits),
+        totalHits: data.totalHits
+      })
 			
 		} catch (error) {
 			this.setState({
@@ -52,31 +61,32 @@ class App extends Component {
       
   }
   getMoreImages = () => {
-    this.setState({ page: this.state.page + 1 })
-    if (this.state.page > 1) this.apiImages()
- 
-    console.log(this.state.page)
+    this.setState({
+    page: this.state.page + 1,
+    showModal: false, })
   }
-  showModal = (e) => {
-    this.setState({ modalURL: e.target.dataset.source, showModal: true })
-    if (e.target.nodeName !== 'IMG') {
-    return;
-    }
-     /*this.setState({  showModal: false })*/
-    console.log(e.target.nodeName)
-    }
+  
+  showModal = (data) => {
+     this.setState({ modalURL: data, showModal: true }) 
+    /*if (e.target.nodeName !== 'IMG') {
+     this.setState({  showModal: false })
+    return
+    }*/
+  }
+   
   render() {
     return (
       <>
       <div className={css.App}>
      <Searchbar
-          onSubmit={this.handleSearch} />
+          handleSearch={this.handleSearch} />
         <ImageGallery hits={this.state.images}
           showModal={this.showModal}
           
         />
-        <Button getMoreImages={this.getMoreImages}
-          images={this.state.images} />
+          {(this.state.images.length < this.state.totalHits && !this.state.isLoading) &&
+            (<Button getMoreImages={this.getMoreImages}
+            images={this.state.images} />)}
         <Loader
           isLoading={this.state.isLoading} />
         {this.state.showModal && (
